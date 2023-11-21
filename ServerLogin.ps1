@@ -1,0 +1,1 @@
+ssh kuba@192.168.105.128 -i "C:\Users\lucag\OneDrive - TBZ\TBZ\M143\id_rsa" -o ServerAliveInterval=30
