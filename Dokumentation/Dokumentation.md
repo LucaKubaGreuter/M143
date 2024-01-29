@@ -21,6 +21,10 @@
     - [Aufbau und Arbeitsweise der konkreten Umgebung](#aufbau-und-arbeitsweise-der-konkreten-umgebung)
 - [Organisation](#organisation)
 - [Allgemeine Anforderungen](#allgemeine-anforderungen)
+- [Systemdefinition](#systemdefinition)
+- [Systemverwaltung](#systemverwaltung)
+- [Ausfallsicherheit](#ausfallsicherheit)
+- [Datensicherung](#datensicherung)
 
 ***
 
@@ -102,7 +106,7 @@ Dieses Dokument dient dazu, dem Auftraggeber die genauen Abläufe und Überlegun
 Mit dieser Dokumentation will man den ganzen Ablauf der Umsetzung offen legen, aber auch soll es als Anleitung dienen, um dem Besitzer der Webseite die Möglichkeit zu offerieren, das Backup und Restore der beiden Server selbstständig durchzuführen. Gerichtet ist diese Dokumentation an alle Betreiber der Blogging-Webseite, aber auch dem Team, welches das Projekt umgesetzt hat, um im Falle von Fragen dem Auftraggeber helfen zu können.
 
 ### Aufbau und Arbeitsweise der konkreten Umgebung
-Verwaltet und gespeichert wird das Backup auf einem kleinen Server, welcher vom Auftraggeber bereits zur Verfügung gestellt wurde, um Budget zu sparen. Da der Auftraggeber das Backup nachher selber verwalten will und bei kleinen Problemen diese auch selber lösen kann, haben wir uns für eine Windows-Umgebung statt Linux für den Backup-Server entschieden. Der Server ist ausgestattet mit einem 4-Core-Prozessor und 8 GB RAM. Als Speicher der Backups und Scripts haben wir uns für eine kleine 200 GB SATA SSD entschieden, welche man schnell abnehmen und wieder hinzufügen kann, im Falle man den Server austauschen oder verbessern muss. Auf dem Windows Server haben wir dann zwei Ordner eingerichtet, auf einem Werden die Scripte verwaltet und in einem zweiten werden die Backups gespeichert. Der SQL-Server basiert auf Ubuntu, Linux und läuft zusammen mit dem Web-Server in einer AWS Umgebung. Auf dem SQL-Server ist ein normales MySQL installiert, es wurde zudem ein Backup-Benutzer erstellt, welcher ohne Passwort Backups der Datenbank erstellen kann, aber nichts anderes. Um Änderungen durchzuführen, kann der root User benutzt werden, doch wird nicht empfohlen, sondern wir haben noch dazu einen Admin-User erstellt. Später wurde ein MySQL-User hinzugefügt, welcher von einer anderen IP-Adresse auf die Datenbank zugreifen kann, zwar der Web-Server, denn er nimmt immer die aktuellsten Daten von der Datenbank und stellt diese auf der Webseite dar. Benutzt wird dafür ein Web-Server, auf welchem Apache2 und PHP installiert sind, diese werden mit einem YAML beim Aufsetzen in AWS installiert und konfiguriert. Damit aber das ganze sicher ist, verlaufen alle Verbindungen über SSH, beim Ausführen des PHP-Scripts, um die Daten vom SQL-Server darzustellen, aber auch beim Erstellen der Backups und kopieren mithilfe von SCP auf den Backup-Server. Die Backups werden mit dem Task-Scheduler auf dem Backup-Server getriggert.
+Verwaltet und gespeichert wird das Backup auf einem kleinen Server, welcher vom Auftraggeber bereits zur Verfügung gestellt wurde, um Budget zu sparen. Da der Auftraggeber das Backup nachher selber verwalten will und bei kleinen Problemen diese auch selber lösen kann, haben wir uns für eine Windows-Umgebung statt Linux für den Backup-Server entschieden. Der Server ist ausgestattet mit einem 4-Core-Prozessor und 8 GB RAM. Als Speicher der Backups und Scripts haben wir uns für eine kleine 200 GB SATA SSD entschieden, welche man schnell abnehmen und wieder hinzufügen kann, im Falle man den Server austauschen oder verbessern muss. Auf dem Windows Server haben wir dann zwei Ordner eingerichtet, auf einem Werden die Scripte verwaltet und in einem zweiten werden die Backups gespeichert. Der SQL-Server basiert auf Ubuntu, Linux und läuft zusammen mit dem Web-Server in einer AWS Umgebung. Auf dem SQL-Server ist ein normales MySQL installiert, es wurde zudem ein Backup-Benutzer erstellt, welcher ohne Passwort Backups der Datenbank erstellen kann, aber nichts anderes. Um Änderungen durchzuführen, kann der root User benutzt werden, doch wird nicht empfohlen, sondern wir haben noch dazu einen Admin-User erstellt. Später wurde ein MySQL-User hinzugefügt, welcher von einer anderen IP-Adresse auf die Datenbank zugreifen kann, zwar der Web-Server, denn er nimmt immer die aktuellsten Daten von der Datenbank und stellt diese auf der Webseite dar. Benutzt wird dafür ein Web-Server, auf welchem Apache2 und PHP installiert sind, diese werden mit einem YAML beim Aufsetzen in AWS installiert und konfiguriert. Damit aber das ganze sicher ist, verlaufen alle Verbindungen über SSH, beim Ausführen des PHP-Scripts, um die Daten vom SQL-Server darzustellen, aber auch beim Erstellen der Backups und kopieren mithilfe von SCP auf den Backup-Server. Die Backups werden mit dem Task-Scheduler auf dem Backup-Server getriggert. Um für noch zusätzliche Sicherheit in einem Notfall-Szenario zu sorgen, wird eine externe Festplatte an den Backup-Server angehängt auf diesem sich immer die neusten Backups befinden, den SQL-Dump und ein komplettes Backup des Backup-Servers auf einem weiteren Externen Speichermediums, damit im Notfall dieser direkt ersetzt werden kann.
 
 ## Organisation
 
@@ -110,4 +114,99 @@ Die verantwortliche Organisation ist ein kleines Unternehmen namens "MyBlogging"
 
 ## Allgemeine Anforderungen
 
-Der Server braucht eine Stabile Internet Verbindung damit der die Backups vom AWS holen kann. Zudem die Möglichkeit den Backup-Server 24/7 laufen zu lassen und auch genug Finanzielle mittel die Server auf AWS zu hosten, in diesem Falle währen wir bei AWS ungefähr bei 990USD pro Jahr. Doch wir empfehlen damit zu rechnen, mehrere Webserver zu hosten, im falle die Webseite sehr hohen Demand bekommen wird und sehr viele User diese verwenden wollen, vor allem aus welchem Land, denn nicht immer ist die Performance gleich. Bei der Hardware muss man beim Windows-Server mindestens 16GB Ram und 4-Cores Konfiguriert haben, mehr braucht er nicht, denn er nimmt den rest einfach mit dem PHP-Sript vom SQL-Server und displayed diese. Beim SQL-Server muss man dagegen eher höhere Rechenleistung einrechnen, vor allem bei den CPU Cores, denn SQL profitiert von vielen und schnellen Cores. Aber man muss auch mit schnellen Memory rechnen, denn wenn immer wieder neue Blogs zur Datenbank hinzugefügt und gelöscht werden profitiert man von schnellen Lese- und Schreibgeschwindigkeiten der Speichermedien. Beim Backup-Server werden keine grosse Anforderungen benötigt, denn er muss nur Scripts ausführen und diese Speicher, dort gehen wir von 8GB RAM und 4-Cores aus. Bei der Software legen wir beim Web- und SQL-Server auf einen Linux basiertes Betriebssystem weil man dort nur Scripts laufen lässt und deshalb kein Userinterface benutzten muss. Zudem ist das auch ein Vorteil, weil es weniger Leistung benötigt und kann deshalb bei den allgemeinen Hardware Anforderungen sparen. Beim Backup-Server sind wir mit Windows gegangen, weil es einfach zu benutzen ist für die Mitarbeiter des Unternehmens. Zudem ist er schon zur Verfügung gestellte Server ein bereits vor installierter Windows-Server, wir mussten ihn nur Updaten und dann war er schon auf dem neusten Stand, wir haben ihn dann nur noch ein bisschen um konfiguriert um Mühen und Kosten sparen.
+Der Server braucht eine Stabile Internet Verbindung damit der die Backups vom AWS holen kann. Zudem die Möglichkeit den Backup-Server 24/7 laufen zu lassen und auch genug Finanzielle mittel die Server auf AWS zu hosten, in diesem Falle währen wir bei AWS ungefähr bei 990USD pro Jahr. Doch wir empfehlen damit zu rechnen, mehrere Webserver zu hosten, im falle die Webseite sehr hohen Demand bekommen wird und sehr viele User diese verwenden wollen, vor allem aus welchem Land, denn nicht immer ist die Performance gleich. Bei der Hardware muss man beim Web-Server mindestens 16GB Ram und 4-Cores Konfiguriert haben, mehr braucht er nicht, denn er nimmt den rest einfach mit dem PHP-Script vom SQL-Server und displayed diese. Beim SQL-Server muss man dagegen eher höhere Rechenleistung einrechnen, vor allem bei den CPU Cores, denn SQL profitiert von vielen und schnellen Cores. Aber man muss auch mit schnellen Memory rechnen, denn wenn immer wieder neue Blogs zur Datenbank hinzugefügt und gelöscht werden profitiert man von schnellen Lese- und Schreibgeschwindigkeiten der Speichermedien. Beim Backup-Server werden keine grosse Anforderungen benötigt, denn er muss nur Scripts ausführen und diese Speicher, dort gehen wir von 8GB RAM und 4-Cores aus. Bei der Software legen wir beim Web- und SQL-Server auf einen Linux basiertes Betriebssystem weil man dort nur Scripts laufen lässt und deshalb kein Userinterface benutzten muss. Zudem ist das auch ein Vorteil, weil es weniger Leistung benötigt und kann deshalb bei den allgemeinen Hardware Anforderungen sparen. Beim Backup-Server sind wir mit Windows gegangen, weil es einfach zu benutzen ist für die Mitarbeiter des Unternehmens. Zudem ist er schon zur Verfügung gestellte Server ein bereits vor installierter Windows-Server, wir mussten ihn nur Updaten und dann war er schon auf dem neusten Stand, wir haben ihn dann nur noch ein bisschen um konfiguriert um Mühen und Kosten sparen. Bei der Software auf dem Backup-Server muss man nicht viel beachten, aber da wir die Backup-Scripte auf beiden Maschinen laufen lassen, also Linux-Instanzen auf AWS und Windows beim Backup-Server, benutzen wir Sell Scripts. Aus dem Grund, dass Shell Scripte einfacher sind auf Windows zum laufen zu bringen als umgekehrt Windows Powershell auf Linux Maschinen. Auch zu beachten, dass man zwar Powershell auf Linux Maschinen installieren kann, jedoch diese dann nicht mit den geplanten Backup-Scripts funktionieren würde falls diese in Powershell geschrieben werden. Deshalb gilt es auch noch Cygwin auf dem Windows-Gerät zu installieren. Mit Cygwin lassen sich Computerprogramme, die üblicherweise unter Linux und Unix laufen, auf Windows portieren. Cygwin ist auch praktisch, um Shell Scripte auf Windows laufen zu lassen, da man nichts anderes benötigt. Ein anderer Weg Shell und Bash auf Windows laufen zu lassen ist über WSL, aber dafür muss man das ganze subsystem installieren, dagegen ist Cygwin eine einfachere Lösung.
+
+## Systemdefinition
+
+| Systeme         | Backup-Server       | Web-Server    | SQL-Server    |
+|-----------------|---------------------|---------------|---------------|
+| CPU-Core        | 4                   | 4             | 16            |
+| RAM             | 8 GB                | 16 GB         | 16 GB         |
+| Storage         | 200 GB              | 20 GB         | 120 GB        |
+| Einsatzzweck    | Scripts und Backups | Webserver     | Datenbank     |
+| Betriebssystem  | Windows Server 2022 | Ubuntu Server | Ubuntu Server |
+
+## Systemverwaltung
+
+Den Zugang zu den Systemen ist Simpel aber einfach, wir verwenden einen SSH key um auf den Backup-Server zu zugreifen, genau wie auf die beiden Server welche in der AWS Cloud laufen. Wir verwenden drei unterschiedliche Private-Keys, einen um von den Systemen auf den Backup-Server zugreifen. Dann hat jeder Betroffene auch noch zwei weitere Private-Keys, einen für den Web-Server und einen für den SQL-Server. Der Backup-Server braucht aber auch Zugriff auf den SQL-Server um von diesem ein Backup erstellen, oder auch einen dump von der Datenbank welche für die Webseite zuständig ist. Für den Backup-Server wurde ein eigener Private-Key bereit gestellt. Bei der Systemaktualisierung beim backup-Server wurde das so eingerichtet, dass die Verantwortlichen immer eine Benachrichtigung bekommen, falls ein Windows Update zur Verfügung steht, dieses wird auch meistens direkt durchgeführt, ausser es ist gerade ein Backup im Gange oder es ist eines kurz vor dem Anfang. Bei den Beiden AWS-Instanzen sieht das anders aus, dort wird ein Termin festgelegt, in diesem Fall ist es am Sonntag zwischen 22:00 und 24:00 damit man genug zeit hat Updates durch zu führen und bei Problemen kann man dann am Montag an einem Arbeitstag die Probleme versuchen zu lösen. Mit der Idee dahinter, dass Menschen während der Arbeit eher unwahrscheinlich einen Blog schreiben oder Lesen und die Wahrscheinlichkeit an den Wochenenden viel grösser ist, da die Menschen in der Freizeit eher einen Blog schreiben würden als während den Arbeitszeiten.
+
+## Ausfallsicherheit
+
+Beim Ausfall des Backups-Server sofort die Abnehmbare Festplatte entfernen und die Verantwortlichen welche für die die Konfiguration des Backup-Servers zuständig waren informieren. Falls der Backup-Server nicht mehr zum laufen gebracht werden kann, soll so schnell wie möglich ein zweiter Backup-Server angeschafft werden. Falls ein neuer Server angeschafft wurde kann dieser mit dem Backup von der einten externen Festplatte restored werden und schnell wieder in Betrieb genommen werden. Anders sieht das aus bei den beiden AWS-Instanzen. Vom Web-Server wird kein Backup erstellt, denn dieser nimmt die Daten von der Datenbank und hat selber nicht ausser dieses Script auf sich. Beim Ausfall oder Überlastung muss sofort auf AWS eine zweite EC2 Instanz mit den genauen Spezifikationen erstellt werden, damit aber alles schon vor installiert ist kann man mit einem einfachen Yaml die Instanz schon vorkonfigurieren.
+
+```yaml
+#cloud-config
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    home: /home/ubuntu
+    shell: /bin/bash
+    ssh_pwauth: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCSSoUukq3sMUjh/bkne/+XvbXSnKjTM3lhreNIBuSY7jH/EJx3/gWOPamL5ZC9qqV+PuWCvajhiJAZ7HcdyYEVMkSxgXbHH+S40fnITPfb6RBBc0Ej2aWylc6d4eRK4Bz7Gg1U7EAGnyP8K+9rNy3o4r8VD8cwICsmmUqYWe0yDw== aws-key
+disable_root: false
+package_update: true
+packages:
+  - curl
+  - wget
+  - apache2
+  - php
+  - libapache2-mod-php
+  - php-mysqli
+  - adminer
+runcmd:
+  - sudo systemctl restart apache2
+  - sudo a2enconf adminer
+  - sudo systemctl restart apache2
+```
+
+Zudem muss man beachtet, dass wenn man den Den alten Web-Server ersetzt, muss man im AWS die Elastic-IP-Adress der alten Instanz entziehen und der neuen zuordnen. Anders ist das, wenn man einen weiteren Web-Server benötigt, weil um auf die SQL-Datenbank zu zugreifen muss man den Web-Server als User in der Datenbank registrieren und dafür muss man mit einem SQL-Command auf dem SQL-Server die IP des neuen Web-Server angeben.
+
+```sql
+CREATE USER 'WebUser'@'44.222.20.187' IDENTIFIED BY 'WebUser1234';
+GRANT ALL PRIVILEGES ON test_db.* TO 'WebUser'@'44.222.20.187';
+FLUSH PRIVILEGES;
+```
+
+Bei einem Ausfall der SQL-Datenbank muss man zuerst wieder die IP-Adresse des alten Servers entziehen und dann eine neue Instanz mit den gleichen Spezifikation erstellen, auch hier können wir uns Arbeit ersparen indem wir mit einem Yaml die ganz vor installation wieder erledigen.
+
+```yaml
+#cloud-config 
+users:   
+  - name: ubuntu     
+    sudo: ALL=(ALL) NOPASSWD:ALL     
+    groups: users, admin     
+    home: /home/ubuntu     
+    shell: /bin/bash     
+    ssh_pwauth: false 
+    ssh_authorized_keys:       
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCSSoUukq3sMUjh/bkne/+XvbXSnKjTM3lhreNIBuSY7jH/EJx3/gWOPamL5ZC9qqV+PuWCvajhiJAZ7HcdyYEVMkSxgXbHH+S40fnITPfb6RBBc0Ej2aWylc6d4eRK4Bz7Gg1U7EAGnyP8K+9rNy3o4r8VD8cwICsmmUqYWe0yDw== aws-key
+disable_root: false 
+package_update: true 
+packages:
+  - curl   
+  - wget
+  - mysql-server
+
+runcmd:
+  - systemctl start mysql
+  - systemctl enable mysql
+```
+
+Aber um die installation zu vervollständigen, muss man diese Konfiguration noch abschliessen.
+
+```bash
+sudo mysql_secure_installation
+```
+
+Wenn all diese Schritte so befolgt wurden, muss man nur den Restore der Datenbank wieder ausführen, dafür Kopieren wir mit Hilfe von SCP den neusten SQL-Dump auf die AWS-Instanz und dort können wir dann mit diesen Befehlen die Datenbank wiederherstellen.
+
+```bash
+mysql> create database test_db;
+
+mysql -u [user_name] –p [test_db] < [backup_file.sql]
+```
+
+## Datensicherung
+

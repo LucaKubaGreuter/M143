@@ -12,4 +12,9 @@ disable_root: false
 package_update: true 
 packages:
   - curl   
-  - wget 
+  - wget
+  - mysql-server
+
+runcmd:
+  - systemctl start mysql
+  - systemctl enable mysql
