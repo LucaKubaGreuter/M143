@@ -24,9 +24,15 @@
 - [Systemdefinition](#systemdefinition)
 - [Systemverwaltung](#systemverwaltung)
 - [Ausfallsicherheit](#ausfallsicherheit)
+  - [Ausfall Web-Server](#ausfall-web-server)
+  - [Ausfall SQL-Server](#ausfall-sql-server)
 - [Datensicherung](#datensicherung)
+
 - [Anhang](#anhang)
-    [Netzwerkplan](#netzwerkplan)
+    - [Netzwerkplan](#netzwerkplan)
+    - [Test-Datenbank](#test-datenbank)
+    - [Beweis-Datenbank](#beweis-datenbank)
+    - [Beweis-Webseite](#beweis-webseite)
 
 ***
 
@@ -40,7 +46,7 @@ Als Betreiber einer kleinen Blogging-Webseite möchte ich ein robustes Backup-Sy
 
 ### Akzeptanzkriterien:
 
-Verwendung des vorhandenen Windows-Servers: Da ich einen ungenutzten Windows-Server besitze, möchte ich diesen effektiv als primären Backup-Server nutzen. Dieser soll so konfiguriert werden, dass er tägliche Backups der Webseite und der Datenbanken durchführt.
+Verwendung des vorhandenen Windows-Servers: Da ich einen ungenutzten Windows-Server besitze, möchte ich diesen effektiv als primären Backup-Server nutzen. Dieser soll so konfiguriert werden, dass er tägliche Backups der Datenbanken durchführt.
 
 Automatisierung und Planung: Das Backup-System soll automatisiert werden, um regelmäßige und konsistente Sicherungen ohne manuellen Aufwand zu gewährleisten. Die Backup-Intervalle sollen an das Datenvolumen und die Aktualisierungshäufigkeit der Webseite angepasst werden.
 
@@ -134,7 +140,11 @@ Den Zugang zu den Systemen ist Simpel aber einfach, wir verwenden einen SSH key 
 
 ## Ausfallsicherheit
 
-Beim Ausfall des Backups-Server sofort die Abnehmbare Festplatte entfernen und die Verantwortlichen welche für die die Konfiguration des Backup-Servers zuständig waren informieren. Falls der Backup-Server nicht mehr zum laufen gebracht werden kann, soll so schnell wie möglich ein zweiter Backup-Server angeschafft werden. Falls ein neuer Server angeschafft wurde kann dieser mit dem Backup von der einten externen Festplatte restored werden und schnell wieder in Betrieb genommen werden. Anders sieht das aus bei den beiden AWS-Instanzen. Vom Web-Server wird kein Backup erstellt, denn dieser nimmt die Daten von der Datenbank und hat selber nicht ausser dieses Script auf sich. Beim Ausfall oder Überlastung muss sofort auf AWS eine zweite EC2 Instanz mit den genauen Spezifikationen erstellt werden, damit aber alles schon vor installiert ist kann man mit einem einfachen Yaml die Instanz schon vorkonfigurieren.
+Beim Ausfall des Backups-Server sofort die Abnehmbare Festplatte entfernen und die Verantwortlichen welche für die die Konfiguration des Backup-Servers zuständig waren informieren. Falls der Backup-Server nicht mehr zum laufen gebracht werden kann, soll so schnell wie möglich ein zweiter Backup-Server angeschafft werden. Falls ein neuer Server angeschafft wurde kann dieser mit dem Backup von der einten externen Festplatte restored werden und schnell wieder in Betrieb genommen werden. Man könnte auch den Backup-Services direkt von AWS benutzen, doch dieser kostet im Vergleich zu unserer Lösung ungefähr 0.15USD pro GB, das sieht nicht nach viel aus, doch mit der Zeit und wenn die Blogging webseite sehr gross wird, wird es eher kostspielig. Anders sieht das aus bei den beiden AWS-Instanzen. 
+
+### Ausfall Web-Server
+
+Vom Web-Server wird kein Backup erstellt, denn dieser nimmt die Daten von der Datenbank und hat selber nicht ausser dieses Script auf sich. Beim Ausfall oder Überlastung muss sofort auf AWS eine zweite EC2 Instanz mit den genauen Spezifikationen erstellt werden, damit aber alles schon vor installiert ist kann man mit einem einfachen Yaml die Instanz schon vorkonfigurieren.
 
 ```yaml
 #cloud-config
@@ -163,13 +173,15 @@ runcmd:
   - sudo systemctl restart apache2
 ```
 
-Zudem muss man beachtet, dass wenn man den Den alten Web-Server ersetzt, muss man im AWS die Elastic-IP-Adress der alten Instanz entziehen und der neuen zuordnen. Anders ist das, wenn man einen weiteren Web-Server benötigt, weil um auf die SQL-Datenbank zu zugreifen muss man den Web-Server als User in der Datenbank registrieren und dafür muss man mit einem SQL-Command auf dem SQL-Server die IP des neuen Web-Server angeben.
+Zudem muss man beachtet, dass wenn man den alten Web-Server ersetzt, muss man in AWS die Elastic-IP-Adress der alten Instanz entziehen und der neuen zuordnen. Anders ist das, wenn man einen weiteren Web-Server benötigt, weil um auf die SQL-Datenbank zu zugreifen muss man den Web-Server als User in der Datenbank registrieren und dafür muss man mit einem SQL-Command auf dem SQL-Server die IP des neuen Web-Server angeben.
 
 ```sql
 CREATE USER 'WebUser'@'44.222.20.187' IDENTIFIED BY 'WebUser1234';
 GRANT ALL PRIVILEGES ON test_db.* TO 'WebUser'@'44.222.20.187';
 FLUSH PRIVILEGES;
 ```
+
+### Ausfall SQL-Server
 
 Bei einem Ausfall der SQL-Datenbank muss man zuerst wieder die IP-Adresse des alten Servers entziehen und dann eine neue Instanz mit den gleichen Spezifikation erstellen, auch hier können wir uns Arbeit ersparen indem wir mit einem Yaml die ganz vor installation wieder erledigen.
 
@@ -241,10 +253,57 @@ scp -i .././sql_rsa ubuntu@34.233.245.79:/home/ubuntu/backup_file.sql ./Backup_S
 In diesem Script wird genau gezeigt mit der Verbindung zum SQL-Server, auf diesem wird dann das 'backup_script.sh' ausgeführt. Dieses Script mach einen aktuellen SQL-dump der Datenbank und löscht ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden.
 
 
+
+
 ## Anhang
 
 ### Netzwerkplan
 <h2 style="text-align: center;"><img src=../Netzwerkplan.png></h2>
+
+### Test-Datenbank
+
+```sql
+CREATE DATABASE test_db;
+ 
+USE test_db;
+ 
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
+ 
+INSERT INTO users (username, email, password)
+VALUES
+  ('johndoe', 'johndoe@example.com', 'password123'),
+  ('janedoe', 'janedoe@example.com', 'password456'),
+  ('petersmith', 'petersmith@example.com', 'password789');
+ 
+CREATE TABLE posts (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  user_id INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+ 
+INSERT INTO posts (title, content, user_id)
+VALUES
+  ('My First Post', 'This is my first post on the test blog.', 1),
+  ('Another Post', 'This is another post on the test blog.', 2),
+  ('Third Post', 'This is the third post on the test blog.', 3);
+```
+
+### Beweis-Datenbank
+
+![Datenbank](../Database.png)
+
+### Beweis-Webseite
+
+![Webseite](../WebPage.png)
 
 
 <sub style="text-align: center; color: blue;"> Kuba's IT Realisierung<sub>
