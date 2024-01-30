@@ -20,6 +20,7 @@
     - [Einführung mit Zielsetzung](#einführung-mit-zielsetzung)
     - [Aufbau und Arbeitsweise der konkreten Umgebung](#aufbau-und-arbeitsweise-der-konkreten-umgebung)
 - [Organisation](#organisation)
+- [Datenschutz](#schweizer-datenschutz)
 - [Allgemeine Anforderungen](#allgemeine-anforderungen)
 - [Systemdefinition](#systemdefinition)
 - [Systemverwaltung](#systemverwaltung)
@@ -139,7 +140,22 @@ Die Backups werden mit dem Task-Scheduler auf dem Backup-Server ausgelöst. Für
 
 Die verantwortliche Organisation ist ein kleines Unternehmen namens "MyBlogging", welches den Benutzern eine kostenlose Oberfläche bieten will, den Leuten die Möglichkeit zu geben, Blogs zu schreiben und lesen, wo/wann/wie sie wollen. Die kleine Seite wird von drei Personen als Nebenjob betrieben, mit dem Hintergrund "Wir waren schon immer Fans von Blogs und diese Freude wollen wir mit allen Teilen". Die drei Personen teilen ihre Verantwortungen immer auf und wechseln sich immer wieder ab. Wenn jemand nicht vorige Zeit hat, übernehmen die anderen Beiden, aber die rechtliche Verantwortung trägt der Gründer und der eingetragene Besitzer des kleinen Unternehmens. Alle drei machen hauptberuflich einen anderen Job und waren drei Freunde welche sich mal zusammen getan haben, um dieses Unternehmen zu gründen, alle drei sind Lehrer, einer von ihnen hatte sich mal für Web Development interessiert und ist mit der Idee der Webseite gekommen, da sie aber nicht grosse Erfahrung mit Informatik haben wollte sie das Umsetzen des Backups Profis überlassen. Das kleine Unternehmen ist lokalisiert in Uster an der Musterstrasse 22. 
 
+## Schweizer Datenschutz
 
+Einhaltung des Schweizer Datenschutzgesetzes (DSG) im Backup-Konzept
+Um die Konformität mit dem Schweizer Datenschutzgesetz (DSG) sicherzustellen, haben wir spezifische Maßnahmen in unser Backup-System integriert. Diese Maßnahmen stellen sicher, dass sowohl die Verarbeitung als auch die Sicherung personenbezogener Daten den gesetzlichen Anforderungen entsprechen.
+
+Datensicherheit gemäß DSG Art. 7: Unser Backup-System verwendet fortschrittliche Verschlüsselungstechnologien, um die Sicherheit der Daten während der Übertragung und Speicherung zu gewährleisten. Sowohl die Übertragung der Daten von unserem AWS-basierten SQL-Server zum Backup-Server als auch die Speicherung auf der 200 GB SATA SSD erfolgen unter Verwendung starker Verschlüsselungsprotokolle. Zudem führen wir regelmäßig Sicherheitsaudits durch, um die Integrität des Systems zu gewährleisten und potenzielle Schwachstellen zu identifizieren.
+
+Rechte der betroffenen Personen (DSG Art. 15 - 21): Unser System ermöglicht es, Anfragen der betroffenen Personen in Bezug auf ihre personenbezogenen Daten effizient zu bearbeiten. Dies umfasst Auskunftsrechte, sowie Anfragen zur Berichtigung oder Löschung von Daten. Unser Backup-System ist so konzipiert, dass es eine schnelle Identifizierung und Bearbeitung solcher Anfragen ermöglicht.
+
+Sicherer Datentransfer (DSG Art. 6): Die Übertragung der Daten zwischen dem AWS-basierten SQL-Server und dem Backup-Server erfolgt sicher über SSH und SCP. Diese Protokolle gewährleisten eine hohe Sicherheit bei der Datenübermittlung und sind konform mit den Anforderungen des DSG.
+
+Dokumentation und Transparenz: Wir führen detaillierte Aufzeichnungen aller Backup-Prozesse und verwendeten Sicherheitsmaßnahmen. Dies umfasst ein Verzeichnis der Verarbeitungstätigkeiten, das regelmäßig aktualisiert wird, um die vollständige Transparenz und Nachverfolgbarkeit zu gewährleisten.
+
+Notfallplanung und Datenwiederherstellung (DSG Art. 7): Im Falle eines Datenverlusts ermöglicht unser System eine schnelle und effiziente Wiederherstellung der Daten aus den Backups. Wir haben einen umfassenden Disaster Recovery Plan entwickelt, der detailliert beschreibt, wie Daten im Notfall wiederhergestellt werden können, um Ausfallzeiten zu minimieren und die Kontinuität der Datenverfügbarkeit zu gewährleisten.
+
+Durch die Integration dieser spezifischen Maßnahmen in unser Backup-System stellen wir sicher, dass wir den Anforderungen des Schweizer Datenschutzgesetzes in vollem Umfang gerecht werden und gleichzeitig ein robustes und sicheres Backup-System bereitstellen.
 
 ## Allgemeine Anforderungen
 
