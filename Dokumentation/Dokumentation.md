@@ -256,7 +256,7 @@ In diesem Script wird genau gezeigt mit der Verbindung zum SQL-Server, auf diese
 mysqldump -u BackupUser test_db > backup_file.sql
 ```
 
-Dieses Script mach einen aktuellen SQL-dump der Datenbank und löscht ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden. Im Moment wird die Datensicherung täglich ausgeführt, doch bei einer Blogging Webseite welche die ganze zeit neue Blogs hinzukommen, wäre es sinnvoll mehrere Backups täglich auszuführen oder auch einen Dienst zu erstellen, welche bei jedem hinzufügen eines Blogs das Backup triggert.
+Dieses Script macht einen aktuellen SQL-dump der Datenbank und ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht, ebenso den Blog an sich. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden. Im Moment wird die Datensicherung täglich ausgeführt, doch bei einer Blogging Webseite welche die ganze zeit neue Blogs hinzukommen, wäre es sinnvoll mehrere Backups täglich auszuführen oder auch einen Dienst zu erstellen, welche bei jedem hinzufügen eines Blogs das Backup triggert.
 
 ## Wartungsarbeiten
 
