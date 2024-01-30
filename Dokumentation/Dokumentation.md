@@ -25,6 +25,8 @@
 - [Systemverwaltung](#systemverwaltung)
 - [Ausfallsicherheit](#ausfallsicherheit)
 - [Datensicherung](#datensicherung)
+- [Anhang](#anhang)
+    [Netzwerkplan](#netzwerkplan)
 
 ***
 
@@ -210,3 +212,39 @@ mysql -u [user_name] –p [test_db] < [backup_file.sql]
 
 ## Datensicherung
 
+Die Art in welcher die Daten gesichert werden ist einfach. Jeden Tag um 00:00 wird vom Backup-Server ein SQL-dump Script auf dem SQL-Server getriggert und dieses wird dann auch mit dem gleichen Script via SCP vom SQL-Server auf den Backup-Server gespeichert.
+
+```bash
+#!/bin/bash
+
+# Linux server SSH connection details
+linux_user='ubuntu'
+linux_host='34.233.245.79'
+linux_key='C:\Users\lucag\Desktop\sql_rsa'
+linux_script='/home/ubuntu/backup_script.sh'
+
+# Windows server backup directory
+backup_dir='C:\Users\lucag\Desktop\Backup'
+
+# Generate timestamp on the Windows machine
+timestamp=$(/bin/date +"%Y-%m-%d_%H-%M")
+
+# Establish SSH connection to the Linux server and execute the backup script
+ssh -i "$linux_key" "$linux_user@$linux_host" "bash $linux_script"
+
+# Copy the backup file from Linux to Windows
+cd '/cygdrive/c/Users/lucag/Desktop/Backup'
+scp -i .././sql_rsa ubuntu@34.233.245.79:/home/ubuntu/backup_file.sql ./Backup_SQL/backup_file_$timestamp.sql
+
+```
+
+In diesem Script wird genau gezeigt mit der Verbindung zum SQL-Server, auf diesem wird dann das 'backup_script.sh' ausgeführt. Dieses Script mach einen aktuellen SQL-dump der Datenbank und löscht ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden.
+
+
+## Anhang
+
+### Netzwerkplan
+<h2 style="text-align: center;"><img src=../Netzwerkplan.png></h2>
+
+
+<sub style="text-align: center; color: blue;"> Kuba's IT Realisierung<sub>
