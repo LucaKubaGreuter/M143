@@ -27,6 +27,7 @@
   - [Ausfall Web-Server](#ausfall-web-server)
   - [Ausfall SQL-Server](#ausfall-sql-server)
 - [Datensicherung](#datensicherung)
+- [Wartungsarbeiten](#wartungsarbeiten)
 
 - [Anhang](#anhang)
     - [Netzwerkplan](#netzwerkplan)
@@ -250,9 +251,11 @@ scp -i .././sql_rsa ubuntu@34.233.245.79:/home/ubuntu/backup_file.sql ./Backup_S
 
 ```
 
-In diesem Script wird genau gezeigt mit der Verbindung zum SQL-Server, auf diesem wird dann das 'backup_script.sh' ausgeführt. Dieses Script mach einen aktuellen SQL-dump der Datenbank und löscht ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden.
+In diesem Script wird genau gezeigt mit der Verbindung zum SQL-Server, auf diesem wird dann das 'backup_script.sh' ausgeführt. Dieses Script mach einen aktuellen SQL-dump der Datenbank und löscht ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden. Im Moment wird die Datensicherung täglich ausgeführt, doch bei einer Blogging Webseite welche die ganze zeit neue Blogs hinzukommen, wäre es sinnvoll mehrere Backups täglich auszuführen oder auch einen Dienst zu erstellen, welche bei jedem hinzufügen eines Blogs das Backup triggert.
 
+## Wartungsarbeiten
 
+Die Server laufen rund um die Uhr, denn die Webseite soll jederzeit abgerufen werden können. Für die Updates werden gezielte Zeiten gewählt. Beim Backup-Server wird man über Updates benachrichtigt und wenn das Update nicht direkt ein sicherheitsrisiko darstellt wird dieses parallel zu den Updates der beiden AWS-Instanzen ausgeführt. Doch wenn es sich um ein Sicherheits-Update handelt welche potenzielle Gefahr zeigt, wird dieses sofern kein Backup im Gange ist oder kurz bevor steht, wird dieser direkt upgedatet. Für die AWS-Instanzen haben wir ebenfalls das gleiche Konzept, dass updates mit einem potenziellen Sicherheits-Risiko so schnell wie möglich installiert werden. In diesem Falle wird die Webseite in einen offline zustand versetzt und upgedatet. Bei Allgemeinen Updates aber wir ein Konzept erstellt welches die genauen Zeiten vorschreibt, wir hatten die Überlegung, dass Menschen Blogs eher an Wochenenden oder in ihrer Freizeit lesen und schreiben. Deshalb kamen wir auf die Idee, die Updates an einem Sonntag von 22:00 bis 24:00 Uhr auszuführen. 
 
 
 ## Anhang
@@ -305,5 +308,7 @@ VALUES
 
 ![Webseite](../WebPage.png)
 
+
+<sup>Die Datenbank und Webseite wurde nur für Test-Zwecke benutzt, in der ganzen Dokumentation wird über die definitive Umsetzung des Auftrags geschrieben.<sup>
 
 <sub style="text-align: center; color: blue;"> Kuba's IT Realisierung<sub>
