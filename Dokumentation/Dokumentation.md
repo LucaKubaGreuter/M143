@@ -28,7 +28,6 @@
   - [Ausfall SQL-Server](#ausfall-sql-server)
 - [Datensicherung](#datensicherung)
 - [Wartungsarbeiten](#wartungsarbeiten)
-
 - [Anhang](#anhang)
     - [Netzwerkplan](#netzwerkplan)
     - [Test-Datenbank](#test-datenbank)
