@@ -114,15 +114,56 @@ Dieses Dokument dient dazu, dem Auftraggeber die genauen Abläufe und Überlegun
 Mit dieser Dokumentation will man den ganzen Ablauf der Umsetzung offen legen, aber auch soll es als Anleitung dienen, um dem Besitzer der Webseite die Möglichkeit zu offerieren, das Backup und Restore der beiden Server selbstständig durchzuführen. Gerichtet ist diese Dokumentation an alle Betreiber der Blogging-Webseite, aber auch dem Team, welches das Projekt umgesetzt hat, um im Falle von Fragen dem Auftraggeber helfen zu können.
 
 ### Aufbau und Arbeitsweise der konkreten Umgebung
-Verwaltet und gespeichert wird das Backup auf einem kleinen Server, welcher vom Auftraggeber bereits zur Verfügung gestellt wurde, um Budget zu sparen. Da der Auftraggeber das Backup nachher selber verwalten will und bei kleinen Problemen diese auch selber lösen kann, haben wir uns für eine Windows-Umgebung statt Linux für den Backup-Server entschieden. Der Server ist ausgestattet mit einem 4-Core-Prozessor und 8 GB RAM. Als Speicher der Backups und Scripts haben wir uns für eine kleine 200 GB SATA SSD entschieden, welche man schnell abnehmen und wieder hinzufügen kann, im Falle man den Server austauschen oder verbessern muss. Auf dem Windows Server haben wir dann zwei Ordner eingerichtet, auf einem Werden die Scripte verwaltet und in einem zweiten werden die Backups gespeichert. Der SQL-Server basiert auf Ubuntu, Linux und läuft zusammen mit dem Web-Server in einer AWS Umgebung. Auf dem SQL-Server ist ein normales MySQL installiert, es wurde zudem ein Backup-Benutzer erstellt, welcher ohne Passwort Backups der Datenbank erstellen kann, aber nichts anderes. Um Änderungen durchzuführen, kann der root User benutzt werden, doch wird nicht empfohlen, sondern wir haben noch dazu einen Admin-User erstellt. Später wurde ein MySQL-User hinzugefügt, welcher von einer anderen IP-Adresse auf die Datenbank zugreifen kann, zwar der Web-Server, denn er nimmt immer die aktuellsten Daten von der Datenbank und stellt diese auf der Webseite dar. Benutzt wird dafür ein Web-Server, auf welchem Apache2 und PHP installiert sind, diese werden mit einem YAML beim Aufsetzen in AWS installiert und konfiguriert. Damit aber das ganze sicher ist, verlaufen alle Verbindungen über SSH, beim Ausführen des PHP-Scripts, um die Daten vom SQL-Server darzustellen, aber auch beim Erstellen der Backups und kopieren mithilfe von SCP auf den Backup-Server. Die Backups werden mit dem Task-Scheduler auf dem Backup-Server getriggert. Um für noch zusätzliche Sicherheit in einem Notfall-Szenario zu sorgen, wird eine externe Festplatte an den Backup-Server angehängt auf diesem sich immer die neusten Backups befinden, den SQL-Dump und ein komplettes Backup des Backup-Servers auf einem weiteren Externen Speichermediums, damit im Notfall dieser direkt ersetzt werden kann.
+
+Das Backup wird auf einem kleinen Server verwaltet und gespeichert. Dieser Server wurde vom Auftraggeber zur Verfügung gestellt, um Budget zu sparen.
+
+Der Auftraggeber möchte das Backup selbst verwalten und bei kleineren Problemen eigenständig Lösungen finden. Deshalb haben wir uns für eine Windows-Umgebung für den Backup-Server entschieden, anstatt Linux zu verwenden.
+
+Der Server ist mit einem 4-Core-Prozessor und 8 GB RAM ausgestattet. Für die Speicherung der Backups und Skripte haben wir eine 200 GB SATA SSD gewählt. Diese SSD lässt sich schnell entfernen und wieder hinzufügen, falls der Server ausgetauscht oder verbessert werden muss.
+
+Auf dem Windows Server haben wir zwei Ordner eingerichtet. Einer wird für die Verwaltung der Skripte genutzt, der andere für die Speicherung der Backups.
+
+Der SQL-Server basiert auf Ubuntu, Linux und wird zusammen mit dem Web-Server in einer AWS-Umgebung betrieben. Auf dem SQL-Server ist ein Standard-MySQL installiert. Es wurde auch ein Backup-Benutzer ohne Passwort erstellt, der nur Backups der Datenbank erstellen kann.
+
+Für Änderungen kann der root User verwendet werden, aber das ist nicht zu empfehlen. Stattdessen haben wir einen Admin-User eingerichtet. Zusätzlich wurde ein MySQL-User hinzugefügt, der von einer anderen IP-Adresse auf die Datenbank zugreifen kann, wie beispielsweise der Web-Server.
+
+Der Web-Server nutzt Apache2 und PHP, die beim Aufsetzen in AWS mit einem YAML installiert und konfiguriert werden. Alle Verbindungen, einschließlich des Ausführens des PHP-Skripts zum Anzeigen der Daten vom SQL-Server und das Erstellen der Backups, erfolgen über SSH. Die Backups werden mittels SCP auf den Backup-Server kopiert.
+
+Die Backups werden mit dem Task-Scheduler auf dem Backup-Server ausgelöst. Für zusätzliche Sicherheit im Notfall wird eine externe Festplatte am Backup-Server angeschlossen, auf der sich immer die neuesten Backups befinden. Zudem gibt es ein komplettes Backup des Backup-Servers auf einem weiteren externen Speichermedium, sodass dieser im Notfall direkt ersetzt werden kann.
+
+
 
 ## Organisation
 
+<h2 style="text-align: center;"><img src=WebsiteLogo.png></h2>
+
 Die verantwortliche Organisation ist ein kleines Unternehmen namens "MyBlogging", welches den Benutzern eine kostenlose Oberfläche bieten will, den Leuten die Möglichkeit zu geben, Blogs zu schreiben und lesen, wo/wann/wie sie wollen. Die kleine Seite wird von drei Personen als Nebenjob betrieben, mit dem Hintergrund "Wir waren schon immer Fans von Blogs und diese Freude wollen wir mit allen Teilen". Die drei Personen teilen ihre Verantwortungen immer auf und wechseln sich immer wieder ab. Wenn jemand nicht vorige Zeit hat, übernehmen die anderen Beiden, aber die rechtliche Verantwortung trägt der Gründer und der eingetragene Besitzer des kleinen Unternehmens. Alle drei machen hauptberuflich einen anderen Job und waren drei Freunde welche sich mal zusammen getan haben, um dieses Unternehmen zu gründen, alle drei sind Lehrer, einer von ihnen hatte sich mal für Web Development interessiert und ist mit der Idee der Webseite gekommen, da sie aber nicht grosse Erfahrung mit Informatik haben wollte sie das Umsetzen des Backups Profis überlassen. Das kleine Unternehmen ist lokalisiert in Uster an der Musterstrasse 22. 
+
+
 
 ## Allgemeine Anforderungen
 
-Der Server braucht eine stabile Internetverbindung, damit er die Backups von AWS holen kann. Zudem die Möglichkeit, den Backup-Server 24/7 laufen zu lassen und auch genug finanzielle Mittel, die Server auf AWS zu hosten, in diesem Falle währen wir bei AWS ungefähr bei 990USD pro Jahr. Doch wir empfehlen damit zu rechnen, mehrere Webserver zu hosten, im Falle die Webseite sehr hohe Demand bekommen wird und sehr viele User diese verwenden wollen, vor allem aus welchem Land, denn nicht immer ist die Performance gleich. Bei der Hardware muss man beim Webserver mindestens 16 GB RAM und 4-Cores konfiguriert haben, mehr braucht er nicht, denn er nimmt den Rest einfach mit dem PHP-Script vom SQL-Server und displayed diese. Beim SQL-Server muss man dagegen eher höhere Rechenleistung einrechnen, vor allem bei den CPU-Cores, denn SQL profitiert von vielen und schnellen Cores. Aber man muss auch mit schneller Speicherung rechnen, denn wenn immer wieder neue Blogs zur Datenbank hinzugefügt und gelöscht werden, profitiert man von schnellen Lese- und Schreibgeschwindigkeiten der Speichermedien. Beim Backup-Server werden keine grossen Anforderungen benötigt, denn er muss nur Scripts ausführen und diesen Speicher, dort gehen wir von 8 GB RAM und 4-Cores aus. Bei der Software legen wir beim Web- und SQL-Server auf ein Linux basiertes Betriebssystem, weil man dort nur Scripts laufen lässt und deshalb kein Userinterface benutzen muss. Zudem ist das auch ein Vorteil, weil es weniger Leistung benötigt und deshalb bei den allgemeinen Hardwareanforderungen sparen kann. Beim Backup-Server sind wir mit Windows gegangen, weil es einfach zu benutzen ist für die Mitarbeiter des Unternehmens. Zudem ist er schon zur Verfügung gestellter Server ein bereits vor installierter Windows-Server, wir mussten ihn nur updaten und dann war er schon auf dem neuesten Stand, wir haben ihn dann nur noch ein bisschen konfiguriert, um Mühen und Kosten zu sparen. Bei der Software auf dem Backup-Server muss man nicht viel beachten, aber da wir die Backup-Scripte auf beiden Maschinen laufen lassen, also Linux-Instanzen auf AWS und Windows beim Backup-Server, benutzen wir Shell Scripts. Aus dem Grund, dass Shell Scripte einfacher sind auf Windows zum Laufen zu bringen als umgekehrt Windows PowerShell auf Linux Maschinen. Auch zu beachten, dass man zwar PowerShell auf Linux Maschinen installieren kann, jedoch diese dann nicht mit den geplanten Backup-Scripts funktionieren würde, falls diese in PowerShell geschrieben werden. Deshalb gilt es auch noch Cygwin auf dem Windows-Gerät zu installieren. Mit Cygwin lassen sich Computerprogramme, die üblicherweise unter Linux und Unix laufen, auf Windows portieren. Cygwin ist auch praktisch, um Shell Scripte auf Windows laufen zu lassen, da man nichts anderes benötigt. Ein anderer Weg Shell und Bash auf Windows laufen zu lassen ist über WSL, aber dafür muss man das ganze Subsystem installieren, dagegen ist Cygwin eine einfachere Lösung.
+Der Server benötigt eine stabile Internetverbindung, um Backups von AWS abzurufen. Es ist auch wichtig, dass der Backup-Server kontinuierlich, also 24/7, laufen kann.
+
+Es müssen ausreichend finanzielle Mittel vorhanden sein, um die Server auf AWS zu hosten. Die Kosten dafür liegen bei etwa 990 USD pro Jahr.
+
+Es wird empfohlen, mit der Möglichkeit zu rechnen, mehrere Webserver zu hosten. Dies ist besonders wichtig, falls die Webseite einen sehr hohen Nutzerandrang erfährt. Die Performance kann je nach Standort der Nutzer variieren.
+
+Für den Webserver ist eine Mindestkonfiguration von 16 GB RAM und 4 Cores erforderlich. Mehr Leistung ist nicht nötig, da der Rest der Aufgaben über das PHP-Script vom SQL-Server übernommen wird.
+
+Der SQL-Server benötigt im Vergleich eine höhere Rechenleistung, insbesondere bei den CPU-Cores, da SQL von vielen und schnellen Cores profitiert. Schnelle Speichermedien sind ebenfalls wichtig, besonders bei häufigen Änderungen in der Datenbank.
+
+Für den Backup-Server sind die Anforderungen geringer. Er muss lediglich Skripte ausführen und Daten speichern, hier reichen 8 GB RAM und 4 Cores aus.
+
+Bei der Softwarewahl setzen wir beim Web- und SQL-Server auf ein Linux-basiertes Betriebssystem, da hier hauptsächlich Skripte ausgeführt werden und keine Benutzeroberfläche nötig ist. Linux benötigt weniger Leistung, was zu Einsparungen bei der Hardware führt und somit geringere Kosten.
+
+Für den Backup-Server wurde Windows gewählt, da es für die Mitarbeiter des Unternehmens einfacher zu bedienen ist. Der Server wurde bereits mit Windows vorinstalliert geliefert, benötigte nur ein Update und eine leichte Konfiguration, um Kosten und Mühen zu sparen.
+
+Bei der Software des Backup-Servers muss nicht viel beachtet werden. Da die Backup-Skripte sowohl auf den Linux-Instanzen auf AWS als auch auf dem Windows-Backup-Server laufen, verwenden wir Shell-Skripte. Diese sind einfacher auf Windows auszuführen als umgekehrt Windows PowerShell auf Linux-Maschinen.
+
+PowerShell kann zwar auf Linux-Maschinen installiert werden, würde aber mit den geplanten Backup-Skripten nicht funktionieren, falls diese in PowerShell geschrieben sind. Daher ist es notwendig, Cygwin auf dem Windows-Gerät zu installieren. Cygwin ermöglicht es, Linux- und Unix-Programme auf Windows zu portieren und ist nützlich, um Shell-Skripte auf Windows auszuführen.
+
+Eine alternative Methode, um Shell und Bash auf Windows laufen zu lassen, ist WSL. Aber Cygwin ist eine einfachere Lösung, da für WSL das gesamte Subsystem installiert werden muss.
 
 ## Systemdefinition
 
@@ -136,7 +177,17 @@ Der Server braucht eine stabile Internetverbindung, damit er die Backups von AWS
 
 ## Systemverwaltung
 
-Der Zugang zu den Systemen ist simpel, aber einfach, wir verwenden einen SSH Key, um auf den Backup-Server zuzugreifen, genau wie auf die beiden Server, welche in der AWS Cloud laufen. Wir verwenden drei unterschiedliche Private-Keys, einen, um von den Systemen auf den Backup-Server zugreifen. Dann hat jeder Betroffene auch noch zwei weitere Private-Keys, einen für den Web-Server und einen für den SQL-Server. Der Backup-Server braucht aber auch Zugriff auf den SQL-Server, um von diesem ein Backup zu erstellen, oder auch einen Dump von der Datenbank, welche für die Webseite zuständig ist. Für den Backup-Server wurde ein eigener Private-Key bereitgestellt. Bei der Systemaktualisierung beim Backup-Server wurde das so eingerichtet, dass die Verantwortlichen immer eine Benachrichtigung bekommen, falls ein Windows Update zur Verfügung steht, dieses wird auch meistens direkt durchgeführt, ausser es ist gerade ein Backup im Gange oder es ist eines kurz vor dem Anfang. Bei den beiden AWS-Instanzen sieht das anders aus, dort wird ein Termin festgelegt, in diesem Fall ist es am Sonntag zwischen 22:00 und 24:00, damit man genug Zeit hat, Updates durchzuführen und bei Problemen kann man dann am Montag an einem Arbeitstag die Probleme versuchen zu lösen. Mit der Idee dahinter, dass Menschen während der Arbeit eher unwahrscheinlich einen Blog schreiben oder lesen und die Wahrscheinlichkeit an den Wochenenden viel grösser ist, da die Menschen in der Freizeit eher einen Blog schreiben würden als während der Arbeitszeiten.
+Der Zugang zu den Systemen erfolgt einfach und unkompliziert über einen SSH-Key. Dieser wird sowohl für den Zugriff auf den Backup-Server als auch auf die beiden in der AWS Cloud laufenden Server verwendet.
+
+Es gibt drei unterschiedliche private SSH-Keys: Einer ermöglicht den Zugriff von den Systemen auf den Backup-Server. Zusätzlich besitzt jeder Beteiligte zwei weitere private Keys, einen für den Zugriff auf den Web-Server und einen für den SQL-Server.
+
+Der Backup-Server benötigt ebenfalls Zugriff auf den SQL-Server, um Backups zu erstellen oder Datenbank-Dumps der für die Webseite relevanten Daten zu generieren. Für den Backup-Server wurde ein spezieller privater Key bereitgestellt.
+
+Bei Systemaktualisierungen des Backup-Servers erhalten die Verantwortlichen Benachrichtigungen über verfügbare Windows-Updates. Diese Updates werden in der Regel sofort durchgeführt, es sei denn, es läuft gerade ein Backup oder ein solches steht kurz bevor.
+
+Bei den AWS-Instanzen wird das Update-Verfahren anders gehandhabt. Hier wird ein fester Termin für Updates festgelegt, in diesem Fall sonntags zwischen 22:00 und 24:00 Uhr. Dies gibt genügend Zeit, Updates durchzuführen und eventuelle Probleme am darauffolgenden Arbeitstag zu lösen.
+
+Die Wahl dieses Zeitfensters für Updates basiert auf der Annahme, dass Menschen während der Arbeitszeit weniger wahrscheinlich Blogs schreiben oder lesen. Am Wochenende ist die Wahrscheinlichkeit höher, da Menschen in ihrer Freizeit eher dazu neigen, Blogs zu schreiben.
 
 ## Ausfallsicherheit
 
@@ -256,12 +307,11 @@ In diesem Script wird genau gezeigt mit der Verbindung zum SQL-Server, auf diese
 mysqldump -u BackupUser test_db > backup_file.sql
 ```
 
-Dieses Script macht einen aktuellen SQL-dump der Datenbank und ersetzt damit das vorherige, denn der vorherige dump ist auf dem Backup-Server gespeichert. Im SQL-dump sind alle Daten vorhanden von den Leuten welche die Blogs Posten, also Namen, E-Mail, Geburtstag und evt. auch noch Nationalität und Geschlecht, ebenso den Blog an sich. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden. Im Moment wird die Datensicherung täglich ausgeführt, doch bei einer Blogging Webseite welche die ganze zeit neue Blogs hinzukommen, wäre es sinnvoll mehrere Backups täglich auszuführen oder auch einen Dienst zu erstellen, welche bei jedem hinzufügen eines Blogs das Backup triggert.
+Dieses Script macht einen aktuellen SQL-Dump der Datenbank und ersetzt damit das vorherige, denn der vorherige Dump ist auf dem Backup-Server gespeichert. Im SQL-Dump sind alle Daten vorhanden von den Leuten, welche die Blogs posten, also Namen, E-Mail, Geburtstag und evtl. auch noch Nationalität und Geschlecht, ebenso den Blog an sich. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden. Im Moment wird die Datensicherung täglich ausgeführt, doch bei einer Blogging-Webseite, welche die ganze Zeit neue Blogs hinzukommen, wäre es sinnvoll mehrere Backups täglich auszuführen oder auch einen Dienst zu erstellen, welcher bei jedem Hinzufügen eines Blogs das Backup triggert.
 
 ## Wartungsarbeiten
 
-Die Server laufen rund um die Uhr, denn die Webseite soll jederzeit abgerufen werden können. Für die Updates werden gezielte Zeiten gewählt. Beim Backup-Server wird man über Updates benachrichtigt und wenn das Update nicht direkt ein sicherheitsrisiko darstellt wird dieses parallel zu den Updates der beiden AWS-Instanzen ausgeführt. Doch wenn es sich um ein Sicherheits-Update handelt welche potenzielle Gefahr zeigt, wird dieses sofern kein Backup im Gange ist oder kurz bevor steht, wird dieser direkt upgedatet. Für die AWS-Instanzen haben wir ebenfalls das gleiche Konzept, dass updates mit einem potenziellen Sicherheits-Risiko so schnell wie möglich installiert werden. In diesem Falle wird die Webseite in einen offline zustand versetzt und upgedatet. Bei Allgemeinen Updates aber wir ein Konzept erstellt welches die genauen Zeiten vorschreibt, wir hatten die Überlegung, dass Menschen Blogs eher an Wochenenden oder in ihrer Freizeit lesen und schreiben. Deshalb kamen wir auf die Idee, die Updates an einem Sonntag von 22:00 bis 24:00 Uhr auszuführen. 
-
+Dieses Script macht einen aktuellen SQL-Dump der Datenbank und ersetzt damit das vorherige, denn der vorherige Dump ist auf dem Backup-Server gespeichert. Im SQL-Dump sind alle Daten vorhanden von den Leuten, welche die Blogs posten, also Namen, E-Mail, Geburtstag und evtl. auch noch Nationalität und Geschlecht, ebenso den Blog an sich. Aber laut dem Schweizer Datenschutzgesetz müssen Datensicherungen wie diese für 10 Jahre aufbewahrt werden. Im Moment wird die Datensicherung täglich ausgeführt, doch bei einer Blogging-Webseite, welche die ganze Zeit neue Blogs hinzukommt, wäre es sinnvoll, mehrere Backups täglich auszuführen oder auch einen Dienst zu erstellen, welcher bei jedem Hinzufügen eines Blogs das Backup triggert.
 
 ## Anhang
 
@@ -304,6 +354,7 @@ VALUES
   ('Another Post', 'This is another post on the test blog.', 2),
   ('Third Post', 'This is the third post on the test blog.', 3);
 ```
+<sub>Test-Datenbank wurde von ChatGPT erstellt<sub>
 
 ### Beweis-Datenbank
 
