@@ -131,7 +131,7 @@ Der Web-Server nutzt Apache2 und PHP, die beim Aufsetzen in AWS mit einem YAML i
 
 Die Backups werden mit dem Task-Scheduler auf dem Backup-Server ausgelöst. Für zusätzliche Sicherheit im Notfall wird eine externe Festplatte am Backup-Server angeschlossen, auf der sich immer die neuesten Backups befinden. Zudem gibt es ein komplettes Backup des Backup-Servers auf einem weiteren externen Speichermedium, sodass dieser im Notfall direkt ersetzt werden kann.
 
-
+<h2 style="text-align: center;"><img src=../Umgebung.png></h2>
 
 ## Organisation
 
