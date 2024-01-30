@@ -1,6 +1,6 @@
 <h1 style="text-align: center;">Dokumentation Backup M143</h1>
 
-<h2 style="text-align: center;"><img src=Backuplogo.png></h2>
+<h2 style="text-align: center;"><img src=BackupLogo.png></h2>
 
 <h2 style="text-align: center;">Luca Greuter <br> TBZ <br> 23.01.2024</h2>
 
